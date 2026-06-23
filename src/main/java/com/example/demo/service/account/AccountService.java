@@ -33,11 +33,13 @@ public class AccountService {
     }
 
     @Transactional
-    public void update (Account account, UpdateAccountRq accountRq) {
+    public void update (AccountDto dto, UpdateAccountRq accountRq) {
         if (isUpdateDataEmpty(accountRq)) {
-            log.warn("Нет данных для обновления аккаунта с id {}!", account.getId());
+            log.warn("Нет данных для обновления аккаунта с id {}!", dto.getUuid());
             throw new AccountInvalidDataException("Нет данных для обновления аккаунта!");
         }
+
+        Account account = getAccountById(dto.getUuid());
 
         if (accountRq.getName() != null && !accountRq.getName().isBlank() && accountRq.getName().length() < 100) {
             account.setName(accountRq.getName());
