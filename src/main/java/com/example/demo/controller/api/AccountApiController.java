@@ -20,19 +20,19 @@ public class AccountApiController {
         return ResponseEntity.ok(accountDto);
     }
 
-    @PutMapping("/update")
+    @PutMapping
     public ResponseEntity<Void> updateAccount (@RequestBody UpdateAccountRq updateAccountRq, AccountDto accountDto) {
-        accountService.update(accountDto, updateAccountRq)
+        accountService.update(accountDto, updateAccountRq);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public ResponseEntity<Void> createAccount (@Valid @RequestBody CreateAccountRq createAccountRq) {
         accountService.create(createAccountRq);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete")
+    @DeleteMapping
     public ResponseEntity<Void> deleteAccount (AccountDto accountDto) {
         accountService.delete(accountService.getAccountById(accountDto.getUuid()));
         return ResponseEntity.ok().build();

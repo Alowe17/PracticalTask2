@@ -28,8 +28,8 @@ public class TaskApiController {
         return ResponseEntity.ok(taskService.getTaskById(id));
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Void> createTask (CreateTaskRq createTaskRq) {
+    @PostMapping
+    public ResponseEntity<Void> createTask (@Valid @RequestBody CreateTaskRq createTaskRq) {
         taskService.create(createTaskRq);
         return ResponseEntity.ok().build();
     }
@@ -40,13 +40,13 @@ public class TaskApiController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Void> updateTask (@PathVariable Long id, @Valid @RequestBody UpdateTaskRq updateTaskRq, AccountDto accountDto) {
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateTask (@PathVariable Long id, @RequestBody UpdateTaskRq updateTaskRq, AccountDto accountDto) {
         taskService.updateTask(id, updateTaskRq, accountDto);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTask (@PathVariable Long id, AccountDto accountDto) {
         taskService.deleteTask(id, accountDto);
         return ResponseEntity.ok().build();
