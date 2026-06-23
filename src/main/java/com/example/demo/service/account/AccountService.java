@@ -1,6 +1,7 @@
 package com.example.demo.service.account;
 
 import com.example.demo.exception.custom.AccountInvalidDataException;
+import com.example.demo.exception.custom.AccountNotFoundException;
 import com.example.demo.mapper.account.AccountMapper;
 import com.example.demo.model.dto.account.AccountDto;
 import com.example.demo.model.dto.account.CreateAccountRq;
@@ -59,5 +60,13 @@ public class AccountService {
 
     private boolean isUpdateDataEmpty (UpdateAccountRq accountRq) {
         return accountRq.getName() == null && accountRq.getSurname() == null && accountRq.getAge() == null;
+    }
+
+    public Account getAccountById (Long id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Аккаунт с id {} не найден!", id);
+                    return new AccountNotFoundException("Не удалось найти аккаунт по указанному номеру!");
+                });
     }
 }
