@@ -112,4 +112,18 @@ public class TaskService {
     private boolean isUpdateDataEmpty(UpdateTaskRq rq) {
         return rq.getTitle() == null && rq.getDescription() == null && rq.getCompleted() == null;
     }
+
+    @Transactional
+    public void changeTaskOwner (Long taskId, Long newOwnerId, AccountDto dto) {
+        Account currentAccount = accountService.getAccountById(dto.getUuid());
+        Task task = taskRepository.findByIdAndAccount(taskId, currentAccount)
+                .orElseThrow(() -> {
+                    log.error("Задача с id {} не найдена для аккаунта {}!", taskId, currentAccount.getId());
+                    return new TaskNotFoundException("Не удалось найти задачу по указанному номеру!");
+                });
+
+        Account newOwner = accountService.getAccountById(newOwnerId);
+        task.setAccount(newOwner);
+        log.info("Владелец задачи с id {} успешно изменен на аккаунт с id {}!", taskId, newOwnerId);
+    }
 }

@@ -51,4 +51,10 @@ public class TaskApiController {
         taskService.deleteTask(id, accountDto);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{number}/owner")
+    public ResponseEntity<Void> changeTaskOwner (@PathVariable Long number, @RequestParam Long newOwnerId, AccountDto accountDto) {
+        taskService.changeTaskOwner(number, newOwnerId, accountDto);
+        return ResponseEntity.ok().build();
+    }
 }
