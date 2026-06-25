@@ -23,37 +23,32 @@ public class AccountService {
     @Transactional
     public void create (CreateAccountRq accountRq) {
         accountRepository.save(accountMapper.toEntity(accountRq));
-        log.info("Аккаунт успешно создан!");
     }
 
     @Transactional
-    public void delete (Account account) {
-        accountRepository.delete(account);
-        log.info("Аккаунт с id {} успешно удален!", account.getId());
+    public void deleteById (Long id) {
+        accountRepository.deleteById(id);
     }
 
     @Transactional
     public void update (AccountDto dto, UpdateAccountRq accountRq) {
         if (isUpdateDataEmpty(accountRq)) {
-            log.warn("Нет данных для обновления аккаунта с id {}!", dto.getUuid());
             throw new AccountInvalidDataException("Нет данных для обновления аккаунта!");
         }
 
-        Account account = getAccountById(dto.getUuid());
+        Account account = getAccountById(dto.getId());
 
-        if (accountRq.getName() != null && !accountRq.getName().isBlank() && accountRq.getName().length() < 100) {
+        if (accountRq.getName() != null) {
             account.setName(accountRq.getName());
         }
 
-        if (accountRq.getSurname() != null && !accountRq.getSurname().isBlank() && accountRq.getSurname().length() < 100) {
+        if (accountRq.getSurname() != null) {
             account.setSurname(accountRq.getSurname());
         }
 
-        if (accountRq.getAge() != null && accountRq.getAge() > 0) {
+        if (accountRq.getAge() != null) {
             account.setAge(accountRq.getAge());
         }
-
-        log.info("Пользователь с id {} успешно обновлен!", account.getId());
     }
 
     public AccountDto getAccount (Account account) {
@@ -61,14 +56,13 @@ public class AccountService {
     }
 
     private boolean isUpdateDataEmpty (UpdateAccountRq accountRq) {
-        return accountRq.getName() == null && accountRq.getSurname() == null && accountRq.getAge() == null;
+        return (accountRq.getName() == null || accountRq.getName().isBlank())
+                && (accountRq.getSurname() == null || accountRq.getSurname().isBlank())
+                && accountRq.getAge() == null;
     }
 
     public Account getAccountById (Long id) {
         return accountRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.error("Аккаунт с id {} не найден!", id);
-                    return new AccountNotFoundException("Не удалось найти аккаунт по указанному номеру!");
-                });
+                .orElseThrow(() -> new AccountNotFoundException("Не удалось найти аккаунт по указанному номеру!"));
     }
 }

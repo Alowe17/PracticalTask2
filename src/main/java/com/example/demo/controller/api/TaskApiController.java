@@ -7,7 +7,6 @@ import com.example.demo.model.dto.task.UpdateTaskRq;
 import com.example.demo.service.task.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,42 +18,37 @@ public class TaskApiController {
     private final TaskService taskService;
 
     @GetMapping
-    public ResponseEntity<List<TaskDto>> getAllTasks (AccountDto accountDto) {
-        return ResponseEntity.ok(taskService.getTasksByAccount(accountDto));
+    public List<TaskDto> getAllTasks (AccountDto accountDto) {
+        return taskService.getTasksByAccount(accountDto);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskDto> getTaskById (@PathVariable Long id) {
-        return ResponseEntity.ok(taskService.getTaskById(id));
+    public TaskDto getTaskById (@PathVariable Long id) {
+        return taskService.getTaskById(id);
     }
 
     @PostMapping
-    public ResponseEntity<Void> createTask (@Valid @RequestBody CreateTaskRq createTaskRq) {
+    public void createTask (@Valid @RequestBody CreateTaskRq createTaskRq) {
         taskService.create(createTaskRq);
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/complete/{id}")
-    public ResponseEntity<Void> completeTask (@PathVariable Long id, AccountDto accountDto) {
+    public void completeTask (@PathVariable Long id, AccountDto accountDto) {
         taskService.complete(id, accountDto);
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updateTask (@PathVariable Long id, @RequestBody UpdateTaskRq updateTaskRq, AccountDto accountDto) {
+    public void updateTask (@PathVariable Long id, @RequestBody UpdateTaskRq updateTaskRq, AccountDto accountDto) {
         taskService.updateTask(id, updateTaskRq, accountDto);
-        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask (@PathVariable Long id, AccountDto accountDto) {
+    public void deleteTask (@PathVariable Long id, AccountDto accountDto) {
         taskService.deleteTask(id, accountDto);
-        return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{number}/owner")
-    public ResponseEntity<Void> changeTaskOwner (@PathVariable Long number, @RequestParam Long newOwnerId, AccountDto accountDto) {
-        taskService.changeTaskOwner(number, newOwnerId, accountDto);
-        return ResponseEntity.ok().build();
+    public void changeTaskOwner (@PathVariable Long number, @RequestParam Long newOwnerId) {
+        taskService.changeTaskOwner(number, newOwnerId);
     }
 }

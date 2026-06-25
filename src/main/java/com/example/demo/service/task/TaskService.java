@@ -29,16 +29,11 @@ public class TaskService {
     public TaskDto getTaskById (Long id) {
         return taskRepository.findById(id)
                 .map(taskMapper::toDto)
-                .orElseThrow(() -> {
-                    log.error("Задача с id {} не найдена!", id);
-                    return new TaskNotFoundException("Не удалось найти задачу по указанному номеру!");
-                });
-        // Не даю конкретики пользователю, чтобы не раскрывать внутреннюю структуру приложения и другую информацию
-        // Доступ разрешен для всех
+                .orElseThrow(() -> new TaskNotFoundException("Не удалось найти задачу по указанному номеру!"));
     }
 
     public List<TaskDto> getTasksByAccount (AccountDto dto) {
-        Account account = accountService.getAccountById(dto.getUuid());
+        Account account = accountService.getAccountById(dto.getId());
         return taskRepository.findAllByAccount(account)
                 .stream()
                 .map(taskMapper::toDto)
@@ -48,20 +43,15 @@ public class TaskService {
     @Transactional
     public void create (CreateTaskRq createTaskRq) {
         taskRepository.save(taskMapper.toEntity(createTaskRq));
-        log.info("Задача успешно создана!");
     }
 
     @Transactional
     public void complete (Long id, AccountDto dto) {
-        Account account = accountService.getAccountById(dto.getUuid());
+        Account account = accountService.getAccountById(dto.getId());
         Task task = taskRepository.findByIdAndAccount(id, account)
-                .orElseThrow(() -> {
-                    log.error("Задача с id {} не найдена для аккаунта {}!", id, account.getId());
-                    return new TaskNotFoundException("Не удалось найти задачу по указанному номеру!");
-                });
+                .orElseThrow(() -> new TaskNotFoundException("Не удалось найти задачу по указанному номеру!"));
 
         if (task.isCompleted()) {
-            log.warn("Задача с id {} уже выполнена!", id);
             return;
         }
 
@@ -70,60 +60,49 @@ public class TaskService {
 
     @Transactional
     public void deleteTask (Long id, AccountDto dto) {
-        Account account = accountService.getAccountById(dto.getUuid());
+        Account account = accountService.getAccountById(dto.getId());
         if (!taskRepository.existsByIdAndAccount(id, account)) {
-            log.error("Задача с id {} не принадлежит этому аккаунту {}!", id, account.getId());
             throw new TaskNotFoundException("Не удалось найти задачу!");
         }
 
         taskRepository.deleteById(id);
-        log.info("Задача с id {} успешно удалена!", id);
     }
 
     @Transactional
     public void updateTask (Long id, UpdateTaskRq updateTaskRq, AccountDto dto) {
         if (isUpdateDataEmpty(updateTaskRq)) {
-            log.warn("Нет данных для обновления задачи с id {}", id);
             throw new TaskInvalidDataException("Нет данных для обновления задачи!");
         }
 
-        Account account = accountService.getAccountById(dto.getUuid());
+        Account account = accountService.getAccountById(dto.getId());
         Task task = taskRepository.findByIdAndAccount(id, account)
-                .orElseThrow(() -> {
-                    log.error("Задача с id {} не найдена для аккаунта {}!", id, account.getId());
-                    return new TaskNotFoundException("Не удалось найти задачу по указанному номеру!");
-                });
+                .orElseThrow(() -> new TaskNotFoundException("Не удалось найти задачу по указанному номеру!"));
 
-        if (updateTaskRq.getTitle() != null && !updateTaskRq.getTitle().isBlank()) {
+        if (updateTaskRq.getTitle() != null) {
             task.setTitle(updateTaskRq.getTitle().trim());
         }
 
-        if (updateTaskRq.getDescription() != null && !updateTaskRq.getDescription().isBlank()) {
+        if (updateTaskRq.getDescription() != null) {
             task.setDescription(updateTaskRq.getDescription().trim());
         }
 
         if (updateTaskRq.getCompleted() != null && updateTaskRq.getCompleted() != task.isCompleted()) {
             task.setCompleted(updateTaskRq.getCompleted());
         }
-
-        log.info("Задача с id {} успешно обновлена!", id);
     }
 
     private boolean isUpdateDataEmpty(UpdateTaskRq rq) {
-        return rq.getTitle() == null && rq.getDescription() == null && rq.getCompleted() == null;
+        return (rq.getTitle() == null || rq.getTitle().isBlank())
+                && (rq.getDescription() == null || rq.getDescription().isBlank())
+                && rq.getCompleted() == null;
     }
 
     @Transactional
-    public void changeTaskOwner (Long taskId, Long newOwnerId, AccountDto dto) {
-        Account currentAccount = accountService.getAccountById(dto.getUuid());
-        Task task = taskRepository.findByIdAndAccount(taskId, currentAccount)
-                .orElseThrow(() -> {
-                    log.error("Задача с id {} не найдена для аккаунта {}!", taskId, currentAccount.getId());
-                    return new TaskNotFoundException("Не удалось найти задачу по указанному номеру!");
-                });
+    public void changeTaskOwner (Long taskId, Long newOwnerId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Не удалось найти задачу по указанному номеру!"));
 
         Account newOwner = accountService.getAccountById(newOwnerId);
         task.setAccount(newOwner);
-        log.info("Владелец задачи с id {} успешно изменен на аккаунт с id {}!", taskId, newOwnerId);
     }
 }

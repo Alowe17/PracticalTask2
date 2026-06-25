@@ -8,7 +8,9 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface AccountMapper {
+
     Account toEntity(CreateAccountRq createAccountRq);
-    @Mapping(source = "account.id", target = "uuid")
+
+    @Mapping(source = "account.id", target = "id")
     AccountDto toDto(Account account);
 }
